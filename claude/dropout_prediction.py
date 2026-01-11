@@ -416,13 +416,31 @@ def evaluate_model(model, X_test, y_test, class_names, training_time):
 
 
 def save_results(results):
-    """Save results to JSON file."""
-    print(f"\n--- Saving Results to {OUTPUT_PATH} ---")
+    """Save results to JSON file and sync with web dashboards."""
+    # List of save locations
+    save_paths = [
+        OUTPUT_PATH,                                      # Base: claude/result.json
+        SCRIPT_DIR / "web" / "public" / "result.json",    # React: claude/web/public/result.json
+        SCRIPT_DIR / "first_version" / "result.json"      # Backup: claude/first_version/result.json
+    ]
     
-    with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
+    print("\n--- Saving Results ---")
     
-    print(f"Results saved successfully!")
+    saved_count = 0
+    for path in save_paths:
+        try:
+            # Ensure parent directory exists before saving
+            if path.parent.exists():
+                with open(path, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, indent=2, ensure_ascii=False)
+                print(f"  ✓ Saved to: {path.relative_to(SCRIPT_DIR.parent)}")
+                saved_count += 1
+            else:
+                print(f"  - Skipped (Path not found): {path.relative_to(SCRIPT_DIR.parent)}")
+        except Exception as e:
+            print(f"  ! Error saving to {path}: {str(e)}")
+            
+    print(f"\nSuccessfully updated {saved_count} result file(s).")
 
 
 def main():

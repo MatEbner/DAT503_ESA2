@@ -1,171 +1,136 @@
-# Student Dropout Prediction - README
+# Student Dropout Prediction
 
-## Beschreibung
-
-Machine Learning Pipeline zur Vorhersage von Studienabbrüchen basierend auf dem UCI ML Repository Dataset "Predict Students' Dropout and Academic Success". Inklusive Web-Dashboard zur Visualisierung der Ergebnisse.
+Machine Learning Pipeline und Web-Dashboard zur Vorhersage von Studienabbrüchen.
 
 ---
 
-## Projektstruktur
+## 📁 Projektstruktur
 
 ```
 claude/
-├── dropout_prediction.py    # ML-Pipeline Script
-├── result.json              # Evaluierungsergebnisse
-├── index.html               # Web-Dashboard (Single Page)
+├── web/                      # 🌐 React Web App (NEU)
+│   ├── src/
+│   │   ├── App.jsx          # Hauptkomponente
+│   │   ├── index.css        # Premium Dark Theme
+│   │   └── main.jsx         # Entry Point
+│   ├── public/
+│   │   └── result.json      # ML-Ergebnisse
+│   └── package.json
+│
+├── first_version/            # 📦 Backup der alten Version
+│   ├── index.html           # Standalone HTML
+│   ├── result.json
+│   └── WEB_DOCUMENTATION.md
+│
+├── dropout_prediction.py     # 🐍 ML-Pipeline
+├── result.json              # ML-Ergebnisse
 ├── README.md                # Diese Datei
-├── IMPLEMENTATION_PLAN.md   # Technischer Plan (ML)
-├── WALKTHROUGH.md           # Detaillierte ML-Erklärung
-└── WEB_DOCUMENTATION.md     # Web-Frontend Dokumentation
-
-shared-data/
-└── data.csv                 # Dataset
+├── IMPLEMENTATION_PLAN.md   # ML-Technische Planung
+├── WALKTHROUGH.md           # ML-Dokumentation
+└── WEB_DOCUMENTATION.md     # Web-Dokumentation
 ```
 
 ---
 
-## 🚀 Schnellstart
+## 🌐 Web-Dashboard (React)
 
-### Option 1: ML-Script ausführen
-
-```bash
-cd claude
-python dropout_prediction.py
-```
-
-### Option 2: Web-Dashboard starten
-
-**Methode A: Mit Python Server (empfohlen)**
-```bash
-cd claude
-python -m http.server 8000
-```
-Dann im Browser öffnen: **http://localhost:8000**
-
-**Methode B: Mit Node.js Server**
-```bash
-cd claude
-npx serve .
-```
-
-**Methode C: VS Code Live Server**
-1. VS Code Extension "Live Server" installieren
-2. Rechtsklick auf `index.html` → "Open with Live Server"
-
-> ⚠️ **Wichtig**: Das direkte Öffnen der HTML-Datei im Browser funktioniert aufgrund von CORS-Einschränkungen beim Laden von `result.json` nicht. Ein lokaler Server ist erforderlich.
-
----
-
-## Voraussetzungen
-
-### Für ML-Script
-- Python 3.8+
-- pandas, numpy, scikit-learn
+### Starten
 
 ```bash
-pip install pandas numpy scikit-learn
+cd claude/web
+npm install     # Einmalig: Dependencies installieren
+npm run dev     # Development Server starten
 ```
 
-### Für Web-Dashboard
-- Nur ein moderner Webbrowser
-- Lokaler HTTP-Server (Python, Node.js, oder VS Code)
-
----
-
-## ML-Pipeline Details
-
-### Ausführung
-
-```bash
-python dropout_prediction.py
-```
-
-### Erwartete Ausgabe
-
-```
-============================================================
-STUDENT DROPOUT PREDICTION - ML PIPELINE
-============================================================
-...
-===== EVALUATION RESULTS =====
-Macro F1-Score:      0.7059
-Weighted F1-Score:   0.7649
-Balanced Accuracy:   0.6996
-Accuracy:            0.7695
-...
-PIPELINE COMPLETED SUCCESSFULLY
-============================================================
-```
-
-### Generierte Datei
-
-`result.json` enthält:
-- Evaluation Metrics (Macro F1, Weighted F1, Balanced Accuracy, Accuracy)
-- Confusion Matrix (3x3 für Dropout, Enrolled, Graduate)
-- Per-Class Metrics (Precision, Recall, F1-Score, Support)
-- Pipeline Documentation (Feature Engineering, Model, Hyperparameters)
-
----
-
-## Web-Dashboard Details
+**URL**: http://localhost:5173
 
 ### Features
 
 | Feature | Beschreibung |
 |---------|--------------|
-| 📊 Metric Cards | Globale Metriken mit animierten Werten |
-| 📈 Confusion Matrix | Tabellarische + grafische Darstellung |
-| 🎯 Per-Class Metrics | Tabelle mit Progress-Bars |
-| 📉 Charts | Doughnut (F1), Radar (PR), Stacked Bar |
+| 📊 Metric Cards | Animierte Hauptmetriken mit Glow-Effekten |
+| 📈 Confusion Matrix | Tabellarische + Chart Darstellung |
+| 🎯 Per-Class Metrics | Progress-Bars mit Farbcodierung |
+| 📉 Charts | Doughnut, Radar, Stacked Bar |
 | 📖 Interpretation | Erklärungen für Nicht-ML-Experten |
+| 🌙 Dark Theme | Premium Glassmorphism Design |
 
-### Technologien
+### Technologie-Stack
 
-- **HTML5 + CSS3**: Modernes Dark-Theme Layout
-- **JavaScript (Vanilla)**: Keine Frameworks, keine Build-Tools
-- **Chart.js**: Interaktive Visualisierungen
-- **Google Fonts (Inter)**: Moderne Typografie
-
-### Screenshots
-
-Das Dashboard zeigt:
-
-1. **Header**: Titel und Beschreibung
-2. **Metric Cards**: Die 4 Hauptmetriken als große Karten
-3. **Confusion Matrix**: Links Tabelle, rechts Stacked Bar Chart
-4. **Per-Class Table**: Precision, Recall, F1 mit farbigen Progress-Bars
-5. **Charts**: F1 Doughnut + Precision/Recall Radar
-6. **Interpretation**: Hilfe für Nicht-Experten
+- **React 19** + Vite
+- **Chart.js** + react-chartjs-2
+- **Vanilla CSS** (kein Tailwind)
 
 ---
 
-## Fehlerbehebung
+## 📦 Backup: Erste Version
 
-### "Failed to load result.json"
+Die ursprüngliche Standalone-HTML-Version ist im Ordner `first_version/` gespeichert.
 
-**Problem**: Browser blockiert lokale Dateizugriffe (CORS)
+### Ausführen der alten Version
 
-**Lösung**: Lokalen Server starten:
 ```bash
+cd claude/first_version
 python -m http.server 8000
+# Browser: http://localhost:8000
 ```
 
-### ModuleNotFoundError (Python)
+---
+
+## 🐍 ML-Pipeline
+
+### Ausführen
+
+```bash
+cd claude
+python dropout_prediction.py
+```
+
+### Ergebnisse
+
+`result.json` enthält:
+- Macro F1: **0.7059**
+- Weighted F1: **0.7649**
+- Balanced Accuracy: **0.6996**
+- Accuracy: **0.7695**
+
+### Voraussetzungen
 
 ```bash
 pip install pandas numpy scikit-learn
 ```
 
-### result.json nicht gefunden
+---
 
-Stelle sicher, dass `result.json` im selben Ordner wie `index.html` liegt.
+## 📊 Modell-Performance
+
+| Klasse | Precision | Recall | F1-Score |
+|--------|-----------|--------|----------|
+| Dropout | 81.9% | 75.0% | 78.3% |
+| Enrolled | 50.7% | 45.3% | 47.8% |
+| Graduate | 82.0% | 89.6% | 85.6% |
 
 ---
 
-## Autor
+## 🔧 Troubleshooting
 
-**Claude AI** - Generiert am 2026-01-11
+### "Module not found" bei npm run dev
 
-## Lizenz
+```bash
+cd claude/web
+npm install
+```
 
-Dieses Projekt wurde für Bildungszwecke erstellt.
+### Port 5173 belegt
+
+Vite wählt automatisch einen anderen Port (z.B. 5174).
+
+### result.json nicht gefunden
+
+Stelle sicher, dass `result.json` im `/web/public/` Ordner liegt.
+
+---
+
+## 👤 Autor
+
+**Claude AI** - Erstellt am 2026-01-11
