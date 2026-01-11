@@ -17,7 +17,7 @@ def run_pipeline():
     start_time = time.time()
     
     # 1. Load Dataset
-    data_path = 'shared-data/data.csv'
+    data_path = '../shared-data/data.csv'
     # The file uses semicolons as separators based on the preview
     df = pd.read_csv(data_path, sep=';')
     
@@ -116,8 +116,15 @@ PIPELINE DOCUMENTATION:
         "best_params": grid_search.best_params_
     }
     
-    with open('gemini/result.json', 'w') as f:
+    with open('public/result.json', 'w') as f:
         json.dump(results_json, f, indent=4)
+        
+    # Also copy to first_version for convenience
+    try:
+        with open('first_version/result.json', 'w') as f:
+            json.dump(results_json, f, indent=4)
+    except:
+        pass
 
 if __name__ == "__main__":
     run_pipeline()
