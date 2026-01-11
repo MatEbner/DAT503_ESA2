@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dropout Prediction - ML Results Dashboard</title>
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           CSS VARIABLES & RESET
+           ═══════════════════════════════════════════════════════════════ */
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --gradient-2: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+            --gradient-3: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           LAYOUT
+           ═══════════════════════════════════════════════════════════════ */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--gradient-1);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           CARDS
+           ═══════════════════════════════════════════════════════════════ */
+        .card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .icon-primary { background: var(--gradient-1); }
+        .icon-success { background: var(--gradient-2); }
+        .icon-warning { background: var(--gradient-3); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           METRIC CARDS
+           ═══════════════════════════════════════════════════════════════ */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .metric-card.primary::before { background: var(--gradient-1); }
+        .metric-card.success::before { background: var(--gradient-2); }
+        .metric-card.warning::before { background: var(--gradient-3); }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-card.success .metric-value {
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .metric-description {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           CHARTS
+           ═══════════════════════════════════════════════════════════════ */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        .chart-container-small {
+            height: 280px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           CONFUSION MATRIX TABLE
+           ═══════════════════════════════════════════════════════════════ */
+        .matrix-container {
+            overflow-x: auto;
+        }
+
+        .confusion-matrix {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .confusion-matrix th,
+        .confusion-matrix td {
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .confusion-matrix th {
+            background: var(--bg-card-hover);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .confusion-matrix td {
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .confusion-matrix tr:hover td {
+            background: var(--bg-card-hover);
+        }
+
+        .matrix-diagonal {
+            background: rgba(16, 185, 129, 0.2) !important;
+            color: var(--success);
+        }
+
+        .matrix-off-diagonal {
+            color: var(--text-muted);
+        }
+
+        .matrix-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            background: var(--bg-card-hover);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           PER-CLASS METRICS TABLE
+           ═══════════════════════════════════════════════════════════════ */
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .metrics-table th,
+        .metrics-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metrics-table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metrics-table td {
+            font-weight: 500;
+        }
+
+        .metrics-table tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .class-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .class-dropout { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .class-enrolled { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .class-graduate { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-card-hover);
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100px;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.good { background: var(--success); }
+        .progress-fill.medium { background: var(--warning); }
+        .progress-fill.low { background: var(--danger); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           INTERPRETATION SECTION
+           ═══════════════════════════════════════════════════════════════ */
+        .interpretation {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hover) 100%);
+            border-left: 4px solid var(--primary);
+        }
+
+        .interpretation-list {
+            list-style: none;
+        }
+
+        .interpretation-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .interpretation-list li:last-child {
+            border-bottom: none;
+        }
+
+        .interpretation-list li::before {
+            content: '💡';
+            flex-shrink: 0;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           LOADING & ERROR STATES
+           ═══════════════════════════════════════════════════════════════ */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            color: #f87171;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════════════════════════ */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header h1 {
+                font-size: 1.75rem;
+            }
+
+            .metric-value {
+                font-size: 2rem;
+            }
+
+            .chart-container {
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🎓 Student Dropout Prediction</h1>
+            <p>Machine Learning Model Results Dashboard</p>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading results...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="error" style="display: none;">
+            <h3>⚠️ Error Loading Data</h3>
+            <p id="error-message"></p>
+        </div>
+
+        <!-- Main Dashboard -->
+        <main id="dashboard" style="display: none;">
+            
+            <!-- Global Metrics -->
+            <section class="metrics-grid" id="metrics-section">
+                <!-- Metrics will be injected here -->
+            </section>
+
+            <!-- Charts Grid -->
+            <div class="dashboard-grid" style="margin-top: 2rem;">
+                
+                <!-- Confusion Matrix -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon icon-primary">📊</div>
+                        <h2>Confusion Matrix</h2>
+                    </div>
+                    <div class="matrix-container" id="confusion-matrix">
+                        <!-- Matrix will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon icon-success">📈</div>
+                        <h2>Predictions Distribution</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="predictions-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Per-Class Metrics Table -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <div class="card-icon icon-warning">🎯</div>
+                        <h2>Per-Class Performance Metrics</h2>
+                    </div>
+                    <div id="class-metrics">
+                        <!-- Table will be injected here -->
+                    </div>
+                </div>
+
+                <!-- F1-Score Comparison -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon icon-primary">📉</div>
+                        <h2>F1-Score by Class</h2>
+                    </div>
+                    <div class="chart-container chart-container-small">
+                        <canvas id="f1-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Precision vs Recall -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon icon-success">⚖️</div>
+                        <h2>Precision vs Recall</h2>
+                    </div>
+                    <div class="chart-container chart-container-small">
+                        <canvas id="pr-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Interpretation Guide -->
+                <div class="card full-width interpretation">
+                    <div class="card-header">
+                        <div class="card-icon icon-warning">📖</div>
+                        <h2>How to Interpret These Results</h2>
+                    </div>
+                    <ul class="interpretation-list">
+                        <li><strong>Macro F1-Score (0.71):</strong> Durchschnittliche Performance über alle drei Klassen. Wert über 0.7 zeigt gute Balance zwischen Precision und Recall.</li>
+                        <li><strong>Confusion Matrix:</strong> Die Diagonale zeigt korrekte Vorhersagen. Je höher die Werte auf der Diagonale, desto besser das Modell.</li>
+                        <li><strong>Graduate (0.86 F1):</strong> Das Modell erkennt erfolgreiche Absolventen am besten - logisch, da dies die größte Klasse ist.</li>
+                        <li><strong>Enrolled (0.48 F1):</strong> Schwächste Performance bei noch eingeschriebenen Studenten. Diese Klasse ist am schwierigsten vorherzusagen, da sie eine Übergangsphase darstellt.</li>
+                        <li><strong>Dropout (0.78 F1):</strong> Gute Erkennung von gefährdeten Studenten - wichtig für frühzeitige Intervention.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </main>
+
+        <footer>
+            <p>Student Dropout Prediction Dashboard | Machine Learning Results Visualization</p>
+            <p>Data Source: result.json | Created by Claude AI</p>
+        </footer>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // DATA LOADING
+        // ═══════════════════════════════════════════════════════════════
+        
+        async function loadData() {
+            try {
+                const response = await fetch('result.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                throw new Error(`Failed to load result.json: ${error.message}. Make sure the file exists and you're running a local server.`);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // RENDER FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        function renderMetrics(metrics) {
+            const container = document.getElementById('metrics-section');
+            
+            const metricsConfig = [
+                { key: 'macro_f1_score', label: 'Macro F1-Score', description: 'Primary metric - average F1 across classes', class: 'primary' },
+                { key: 'weighted_f1_score', label: 'Weighted F1-Score', description: 'F1 weighted by class support', class: 'primary' },
+                { key: 'balanced_accuracy', label: 'Balanced Accuracy', description: 'Accuracy adjusted for class imbalance', class: 'success' },
+                { key: 'accuracy', label: 'Accuracy', description: 'Overall correct predictions', class: 'success' }
+            ];
+
+            container.innerHTML = metricsConfig.map(m => `
+                <div class="metric-card ${m.class}">
+                    <div class="metric-label">${m.label}</div>
+                    <div class="metric-value">${(metrics[m.key] * 100).toFixed(1)}%</div>
+                    <div class="metric-description">${m.description}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderConfusionMatrix(matrixData) {
+            const container = document.getElementById('confusion-matrix');
+            const { matrix, labels } = matrixData;
+
+            let html = `
+                <table class="confusion-matrix">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th colspan="${labels.length}" style="text-align: center;">Predicted</th>
+                        </tr>
+                        <tr>
+                            <th>Actual</th>
+                            ${labels.map(l => `<th>${l}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            matrix.forEach((row, i) => {
+                html += `<tr>
+                    <td class="matrix-label">${labels[i]}</td>
+                    ${row.map((val, j) => `
+                        <td class="${i === j ? 'matrix-diagonal' : 'matrix-off-diagonal'}">${val}</td>
+                    `).join('')}
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderClassMetrics(perClassMetrics) {
+            const container = document.getElementById('class-metrics');
+            const classStyles = {
+                'Dropout': 'class-dropout',
+                'Enrolled': 'class-enrolled',
+                'Graduate': 'class-graduate'
+            };
+
+            const getProgressClass = (value) => {
+                if (value >= 0.7) return 'good';
+                if (value >= 0.5) return 'medium';
+                return 'low';
+            };
+
+            let html = `
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1-Score</th>
+                            <th>Support</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            for (const [className, metrics] of Object.entries(perClassMetrics)) {
+                html += `
+                    <tr>
+                        <td>
+                            <span class="class-badge ${classStyles[className] || ''}">${className}</span>
+                        </td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${getProgressClass(metrics.precision)}" 
+                                     style="width: ${metrics.precision * 100}%"></div>
+                            </div>
+                            ${(metrics.precision * 100).toFixed(1)}%
+                        </td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${getProgressClass(metrics.recall)}" 
+                                     style="width: ${metrics.recall * 100}%"></div>
+                            </div>
+                            ${(metrics.recall * 100).toFixed(1)}%
+                        </td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${getProgressClass(metrics.f1_score)}" 
+                                     style="width: ${metrics.f1_score * 100}%"></div>
+                            </div>
+                            ${(metrics.f1_score * 100).toFixed(1)}%
+                        </td>
+                        <td>${metrics.support}</td>
+                    </tr>
+                `;
+            }
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CHART FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        function createPredictionsChart(matrixData) {
+            const ctx = document.getElementById('predictions-chart').getContext('2d');
+            const { matrix, labels } = matrixData;
+            
+            // Calculate totals per class
+            const totals = matrix.map(row => row.reduce((a, b) => a + b, 0));
+            const correct = matrix.map((row, i) => row[i]);
+            const incorrect = totals.map((total, i) => total - correct[i]);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Correct',
+                            data: correct,
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Incorrect',
+                            data: incorrect,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#94a3b8' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createF1Chart(perClassMetrics) {
+            const ctx = document.getElementById('f1-chart').getContext('2d');
+            const labels = Object.keys(perClassMetrics);
+            const f1Scores = labels.map(l => perClassMetrics[l].f1_score);
+
+            const colors = {
+                'Dropout': 'rgba(239, 68, 68, 0.8)',
+                'Enrolled': 'rgba(245, 158, 11, 0.8)',
+                'Graduate': 'rgba(16, 185, 129, 0.8)'
+            };
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: f1Scores,
+                        backgroundColor: labels.map(l => colors[l]),
+                        borderColor: labels.map(l => colors[l].replace('0.8', '1')),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94a3b8', padding: 15 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.label}: ${(ctx.raw * 100).toFixed(1)}%`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createPRChart(perClassMetrics) {
+            const ctx = document.getElementById('pr-chart').getContext('2d');
+            const labels = Object.keys(perClassMetrics);
+
+            const colors = {
+                'Dropout': { bg: 'rgba(239, 68, 68, 0.2)', border: 'rgba(239, 68, 68, 1)' },
+                'Enrolled': { bg: 'rgba(245, 158, 11, 0.2)', border: 'rgba(245, 158, 11, 1)' },
+                'Graduate': { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 1)' }
+            };
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Precision', 'Recall', 'F1-Score'],
+                    datasets: labels.map(label => ({
+                        label: label,
+                        data: [
+                            perClassMetrics[label].precision,
+                            perClassMetrics[label].recall,
+                            perClassMetrics[label].f1_score
+                        ],
+                        backgroundColor: colors[label].bg,
+                        borderColor: colors[label].border,
+                        borderWidth: 2,
+                        pointBackgroundColor: colors[label].border
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94a3b8', padding: 10 }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 1,
+                            ticks: { 
+                                color: '#64748b',
+                                backdropColor: 'transparent'
+                            },
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' },
+                            pointLabels: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // MAIN INITIALIZATION
+        // ═══════════════════════════════════════════════════════════════
+
+        async function init() {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error');
+            const dashboardEl = document.getElementById('dashboard');
+
+            try {
+                const data = await loadData();
+                
+                // Hide loading, show dashboard
+                loadingEl.style.display = 'none';
+                dashboardEl.style.display = 'block';
+
+                // Render components
+                renderMetrics(data.evaluation_metrics);
+                renderConfusionMatrix(data.confusion_matrix);
+                renderClassMetrics(data.per_class_metrics);
+
+                // Create charts
+                createPredictionsChart(data.confusion_matrix);
+                createF1Chart(data.per_class_metrics);
+                createPRChart(data.per_class_metrics);
+
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                document.getElementById('error-message').textContent = error.message;
+            }
+        }
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
