@@ -1,0 +1,23 @@
+# Task Checklist
+
+- [x] Read and interpret instructions from `prompts/ML_prompt.ini`
+- [x] Prepare data from `shared-data/data.csv` if required
+- [x] Implement ML logic in `/gemini` folder
+- [x] Verify implementation
+- [x] Create walkthrough
+- [x] Read and interpret instructions from `prompts/Web_prompt.ini`
+- [x] Create implementation plan for Web Frontend
+- [x] Implement Web Frontend in `/gemini` folder
+- [x] Verify Web Frontend
+- [x] Provide startup instructions
+- [/] Plan React migration and UI optimization
+- [ ] Initialize Vite/React project in `/gemini`
+- [ ] Implement premium UI components and layouts
+- [ ] Integrate `result.json` data handling
+- [ ] Verify local execution and visual excellence
+- [ ] Update documentation and startup guides
+- [/] Read and interpret instructions from `prompts/Web_prompt.ini`
+- [ ] Create implementation plan for Web Frontend
+- [ ] Implement Web Frontend in `/gemini` folder
+- [ ] Verify Web Frontend
+- [ ] Provide startup instructions
